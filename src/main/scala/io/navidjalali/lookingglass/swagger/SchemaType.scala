@@ -4,7 +4,7 @@ import io.swagger.v3.oas.models.media.Schema
 
 import scala.jdk.CollectionConverters.*
 
-enum SwaggerType:
+enum SchemaType:
   self =>
   case Str
   case Int
@@ -13,13 +13,13 @@ enum SwaggerType:
   case Bool
   case DateTime
   case Date
-  case Array(itemType: SwaggerType)
+  case Array(itemType: SchemaType)
   case Ref(name: String)
   case CoProduct(values: List[String])
-  case Product(fields: List[(String, SwaggerType)])
+  case Product(fields: List[(String, SchemaType)])
   case Object
   case Unsupported(name: String)
-  case Optional(itemType: SwaggerType)
+  case Optional(itemType: SchemaType)
 
   def getInnerRefs: List[String] =
     self match
@@ -32,8 +32,8 @@ enum SwaggerType:
       case Optional(itemType) => itemType.getInnerRefs
       case _                  => Nil
 
-object SwaggerType:
-  def fromSchema(s: Schema[_]): SwaggerType =
+object SchemaType:
+  def fromSwaggerSchema(s: Schema[_]): SchemaType =
     Option(s.getType) match
       case Some("string")  =>
         Option(s.getEnum) match
@@ -55,7 +55,7 @@ object SwaggerType:
           case _               => Double
       case Some("boolean") => Bool
       case Some("array")   =>
-        fromSchema(s.getItems) match
+        fromSwaggerSchema(s.getItems) match
           case Unsupported(name) => Unsupported(s"array of $name")
           case itemType          => Array(itemType)
       case Some("object")  =>
@@ -68,8 +68,8 @@ object SwaggerType:
               (
                 name,
                 if required.contains(name)
-                then fromSchema(property)
-                else Optional(fromSchema(property))
+                then fromSwaggerSchema(property)
+                else Optional(fromSwaggerSchema(property))
               )
             })
           }

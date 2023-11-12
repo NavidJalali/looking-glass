@@ -1,6 +1,6 @@
 package io.navidjalali.lookingglass
 
-import io.navidjalali.lookingglass.swagger.SwaggerType
+import io.navidjalali.lookingglass.swagger.SchemaType
 import io.swagger.parser.OpenAPIParser
 
 import scala.jdk.CollectionConverters.*
@@ -92,8 +92,8 @@ object Macros:
     )
 
     val schemas = openAPI.getComponents.getSchemas.asScala.map { case (name, property) =>
-      val swaggerType = SwaggerType.fromSchema(property)
-      (name, swaggerType)
+      val schemaType = SchemaType.fromSwaggerSchema(property)
+      (name, schemaType)
     }.toMap
 
     schemas
@@ -104,7 +104,7 @@ object Macros:
 
   def refineType(quotes: Quotes)(
     initial: quotes.reflect.TypeRepr,
-    refinements: List[(String, SwaggerType)]
+    refinements: List[(String, SchemaType)]
   ): quotes.reflect.TypeRepr =
     given Quotes = quotes
     import quotes.reflect.*
